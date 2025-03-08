@@ -18,6 +18,7 @@ void usage(const bool error) {
     fprintf(error ? stderr : stdout, "Usage: bicycle [options...]\n"
                     " -r, --row-size <size> Maximum cards in a row\n"
                     " -c, --cards <amount>  Number of cards to deal\n"
+                    " -d, --decks <amount>  Number of decks in the shoe\n"
                     " -n, --no-shuffle      Deal from an un-shuffled deck\n"
                     " -h, --help            Display this help message\n");
     exit(error ? EXIT_FAILURE : EXIT_SUCCESS);
@@ -29,7 +30,7 @@ struct timeval get_time(void) {
     return tv;
 }
 
-int strtoint(const char *str, const int default_value) {
+int strtoint(const char *str) {
     char *endptr;
     const int value = strtol(str, &endptr, 10);
     if (endptr == str || *endptr != '\0') {
@@ -43,21 +44,34 @@ void process_arguments(const int argc, char *argv[]) {
     static struct option long_options[] = {
         {"row-size", required_argument, nullptr, 'r'},
         {"cards", required_argument, nullptr, 'c'},
+        {"decks", required_argument, nullptr, 'd'},
         {"no-shuffle", no_argument, nullptr, 'n'},
         {"help", no_argument, nullptr, 'h'}
     };
 
     int ch;
-    while ((ch = getopt_long(argc, argv, "r:c:nh", long_options, nullptr)) != -1) {
+    while ((ch = getopt_long(argc, argv, "r:c:d:nh", long_options, nullptr)) != -1) {
         switch (ch) {
             case 'r':
-                row_size = strtoint(optarg, DEFAULT_ROW_SIZE);
-                row_size = row_size < 1 ? 1 : row_size;
+                row_size = strtoint(optarg);
+                if (hand_size < 1) {
+                    fprintf(stderr, "Row size must be at least 1.\n");
+                    usage(true);
+                }
                 break;
             case 'c':
-                hand_size = strtoint(optarg, DEFAULT_HAND_SIZE);
-                hand_size = hand_size < 1 ? 1 : hand_size;
-                deck_size = (hand_size / CARDS_PER_DECK + 1) * 52;
+                hand_size = strtoint(optarg);
+                if (hand_size < 1) {
+                    fprintf(stderr, "Hand size must be at least 1.\n");
+                    usage(true);
+                }
+                break;
+            case 'd':
+                deck_size = strtoint(optarg) * CARDS_PER_DECK;
+                if (deck_size < CARDS_PER_DECK) {
+                    fprintf(stderr, "You must have at least 1 deck in the shoe.\n");
+                    usage(true);
+                }
                 break;
             case 'n':
                 shuffle = false;
@@ -72,13 +86,13 @@ void process_arguments(const int argc, char *argv[]) {
     }
 }
 
-void generate_and_print_hand(const int deck_size) {
+void generate_and_print_hand() {
     Card *deck = malloc(deck_size * sizeof(Card));
 
     generate_deck(deck, deck_size);
     if (shuffle)
         shuffle_deck(deck, deck_size);
-    print_hand(deck, hand_size, row_size);
+    deal_cards(deck, deck_size, hand_size, row_size, shuffle, 0);
 
     free(deck);
 }
@@ -89,7 +103,7 @@ int main(const int argc, char *argv[]) {
     const struct timeval tv = get_time();
     srand(tv.tv_usec * tv.tv_sec);
 
-    generate_and_print_hand(deck_size);
+    generate_and_print_hand();
 
     return 0;
 }

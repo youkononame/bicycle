@@ -24,8 +24,9 @@ void generate_deck(Card *deck, const int deck_size) {
                 break;
         }
 
-        suit = suit % SPADES + 1;
         rank = rank % KING + 1;
+        if (rank == ACE)
+            suit = suit % SPADES + 1;
     }
 }
 

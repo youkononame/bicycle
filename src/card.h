@@ -32,6 +32,6 @@ typedef struct Card {
     char face;
 } Card;
 
-void print_hand(const Card *hand, int hand_size, int row_size);
+void deal_cards(Card *deck, int deck_size, int hand_size, int row_size, bool shuffle, int starting_index);
 
 #endif
