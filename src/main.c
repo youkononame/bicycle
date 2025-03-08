@@ -12,8 +12,18 @@ constexpr int CARDS_PER_DECK = 52;
 int row_size = DEFAULT_ROW_SIZE;
 int hand_size = DEFAULT_HAND_SIZE;
 int deck_size = CARDS_PER_DECK;
+bool shuffle = true;
 
-struct timeval get_time() {
+void usage(const bool error) {
+    fprintf(error ? stderr : stdout, "Usage: bicycle [options...]\n"
+                    " -r, --row-size <size> Maximum cards in a row\n"
+                    " -c, --cards <amount>  Number of cards to deal\n"
+                    " -n, --no-shuffle      Deal from an un-shuffled deck\n"
+                    " -h, --help            Display this help message\n");
+    exit(error ? EXIT_FAILURE : EXIT_SUCCESS);
+}
+
+struct timeval get_time(void) {
     struct timeval tv;
     gettimeofday(&tv, NULL);
     return tv;
@@ -23,19 +33,22 @@ int strtoint(const char *str, const int default_value) {
     char *endptr;
     const int value = strtol(str, &endptr, 10);
     if (endptr == str || *endptr != '\0') {
-        return default_value;
+        usage(true);
     }
+
     return value;
 }
 
 void process_arguments(const int argc, char *argv[]) {
     static struct option long_options[] = {
         {"row-size", required_argument, nullptr, 'r'},
-        {"cards", required_argument, nullptr, 'c'}
+        {"cards", required_argument, nullptr, 'c'},
+        {"no-shuffle", no_argument, nullptr, 'n'},
+        {"help", no_argument, nullptr, 'h'}
     };
 
     int ch;
-    while ((ch = getopt_long(argc, argv, "r:c:", long_options, NULL)) != -1) {
+    while ((ch = getopt_long(argc, argv, "r:c:nh", long_options, nullptr)) != -1) {
         switch (ch) {
             case 'r':
                 row_size = strtoint(optarg, DEFAULT_ROW_SIZE);
@@ -46,8 +59,15 @@ void process_arguments(const int argc, char *argv[]) {
                 hand_size = hand_size < 1 ? 1 : hand_size;
                 deck_size = (hand_size / CARDS_PER_DECK + 1) * 52;
                 break;
+            case 'n':
+                shuffle = false;
+                break;
+            case 'h':
+                usage(false);
+                break;
             default:
-                exit(EXIT_FAILURE);
+                usage(true);
+                break;
         }
     }
 }
@@ -56,7 +76,8 @@ void generate_and_print_hand(const int deck_size) {
     Card *deck = malloc(deck_size * sizeof(Card));
 
     generate_deck(deck, deck_size);
-    shuffle_deck(deck, deck_size);
+    if (shuffle)
+        shuffle_deck(deck, deck_size);
     print_hand(deck, hand_size, row_size);
 
     free(deck);
