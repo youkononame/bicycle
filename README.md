@@ -14,7 +14,7 @@ bicycle [-r, --row-size <size>] [-h, --hand-size <amount>] [-d, --decks <amount>
 * `-d, --decks <amount>` The amount of decks that will be put in the shoe
 * `-n, --no-shuffle` If enabled, the deck will not be shuffled before cards are dealt out
 * `-h, --help` Displays this help message
-* 
+
 The row size, hand size and number of decks all must be at least 1.
 
 # Installation
