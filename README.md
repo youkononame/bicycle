@@ -7,11 +7,12 @@
 
 # Usage
 ```bash
-bicycle [-r, --row-size <size>] [-h, --hand-size <amount>] [-d, --decks <amount>] [-n, --no-shuffle] [-h, --help]
+bicycle [-r, --row-size <size>] [-h, --hand-size <amount>] [-d, --decks <amount>] [-b, --baccarat] [-n, --no-shuffle] [-h, --help]
 ```
 * `-r, --row-size <size>` The maximum number of cards that will be displayed in one row
 * `-h, --hand-size <amount>` The amount of cards that will be dealt out
 * `-d, --decks <amount>` The amount of decks that will be put in the shoe
+* `-b, --baccarat` Play a game of baccarat
 * `-n, --no-shuffle` If enabled, the deck will not be shuffled before cards are dealt out
 * `-h, --help` Displays this help message
 
@@ -21,7 +22,7 @@ The row size, hand size and number of decks all must be at least 1.
 ## Binaries
 Pre-compiled binaries can be found in the [Releases](https://github.com/youkononame/bicycle/releases/) tab
 
-Move the binary into `/bin/` or `/usr/bin`, or any other folder in your `PATH`  for easy use from any directory
+Move the binary into `/usr/local/bin` or any other folder in your `PATH`  for easy use from any directory
 
 ## Build from source
 ### Prerequisites
