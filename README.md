@@ -26,6 +26,8 @@ Pre-compiled binaries can be found in the [Releases](https://github.com/youkonon
 For ease of access, add the file to your `PATH` environment variable to be usable from any directory
 
 ## Build from source
+Instructions to build from source are currently only available for Unix systems.
+
 ### Prerequisites
 - cmake >= 3.28.3
 - make >= 4.3
