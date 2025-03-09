@@ -33,12 +33,12 @@ void play_baccarat(const Card *deck, const int row_size) {
 
     const bool player_hits = should_player_hit(player_hand);
     const int player_value = get_hand_value(player_hand, player_hits);
-    deal_cards(player_hand, HAND_SIZE, player_hits ? HAND_SIZE : HAND_SIZE - 1, row_size, false, 0);
+    deal_cards(player_hand, HAND_SIZE, player_hits ? HAND_SIZE : HAND_SIZE - 1, row_size, false);
     printf("Player hand value: %d\n\n", player_value);
 
     const bool banker_hits = should_banker_hit(banker_hand, player_hand);
     const int banker_value = get_hand_value(banker_hand, banker_hits);
-    deal_cards(banker_hand, HAND_SIZE, banker_hits ? HAND_SIZE : HAND_SIZE - 1, row_size, false, 0);
+    deal_cards(banker_hand, HAND_SIZE, banker_hits ? HAND_SIZE : HAND_SIZE - 1, row_size, false);
     printf("Banker hand value: %d\n\n", banker_value);
 
     printf("%s!\n", player_value == banker_value ? "Tie" : player_value > banker_value ? "Player wins" : "Banker wins");

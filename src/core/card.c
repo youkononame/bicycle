@@ -14,26 +14,26 @@ void value_to_string(char *buf, const Card card) {
         snprintf(buf, sizeof(buf), " %c", card.face);
 }
 
-void deal_cards(Card *deck, const int deck_size, const int hand_size, const int row_size, const bool shuffle, const int starting_index) {
-    printf("| ");
-    int index = starting_index;
+void deal_cards(Card *deck, const int deck_size, int hand_size, const int row_size, const bool shuffle) {
     for (int i = 0; i < hand_size; ++i) {
-        const Card card = deck[index++];
+        if(i > deck_size - 1) {
+            if(shuffle)
+                shuffle_deck(deck, deck_size);
+
+            hand_size = hand_size % i;
+            i = 0;
+        }
+
+        const Card card = deck[i];
 
         if (i % row_size == 0 && i != 0)
-            printf("\n| ");
+            puts("|");
 
         char buf[4];
         value_to_string(buf, card);
-        printf("%s %s | ",
+        printf("| %s %s ",
                suit_to_string(card.suit),
                buf);
-
-        if (index == deck_size) {
-            if (shuffle)
-                shuffle_deck(deck, deck_size);
-            index = 0;
-        }
     }
-    puts("");
+    puts("|");
 }

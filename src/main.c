@@ -1,122 +1,137 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include <sys/time.h>
-#include <getopt.h>
-#include "core/card.h"
+#include <time.h>
+#include <cargs.h>
 #include "core/deck.h"
+#include "core/clock.h"
 #include "games/baccarat.h"
 
-constexpr int DEFAULT_ROW_SIZE = 4;
-constexpr int DEFAULT_HAND_SIZE = 1;
-constexpr int CARDS_PER_DECK = 52;
+static constexpr int CARDS_PER_DECK = 52;
+static int row_size = 5, hand_size = 1, deck_size = CARDS_PER_DECK;
+static long int seed = -1;
+static bool shuffle = true, baccarat = false;
 
-unsigned int seed;
-int row_size = DEFAULT_ROW_SIZE;
-int hand_size = DEFAULT_HAND_SIZE;
-int deck_size = CARDS_PER_DECK;
-bool shuffle = true;
-bool baccarat = false;
+static struct cag_option options[] = {
+    {
+        .identifier = 'r',
+        .access_letters = "r",
+        .access_name = "row-size",
+        .value_name = "SIZE",
+        .description = "Maximum cards displayed in one row"
+    },
+    {
+        .identifier = 'c',
+        .access_letters = "c",
+        .access_name = "cards",
+        .value_name = "AMOUNT",
+        .description = "Number of cards dealt"
+    },
+    {
+        .identifier = 'd',
+        .access_letters = "d",
+        .access_name = "decks",
+        .value_name = "NUMBER",
+        .description = "Number of decks in the shoe"
+    },
+    {
+        .identifier = 's',
+        .access_letters = "s",
+        .access_name = "seed",
+        .value_name = "SEED",
+        .description = "RNG seed for shuffling"
+    },
+    {
+        .identifier = 'b',
+        .access_letters = "b",
+        .access_name = "baccarat",
+        .value_name = nullptr,
+        .description = "Play a game of baccarat"
+    },
+    {
+        .identifier = 'n',
+        .access_letters = "n",
+        .access_name = "no-shuffle",
+        .value_name = nullptr,
+        .description = "Deal cards without shuffling"
+    },
+    {
+        .identifier = 'h',
+        .access_letters = "h",
+        .access_name = "help",
+        .description = "Displays the help message"
+    },
+};
 
-void usage(const bool error) {
-    fprintf(error ? stderr : stdout, "Usage: bicycle [options...]\n"
-            " -r, --row-size <size> Maximum cards in a row\n"
-            " -c, --cards <amount>  Number of cards to deal\n"
-            " -d, --decks <amount>  Number of decks in the shoe\n"
-            " -s, --seed <seed>     Seed used for shuffling the deck\n"
-            " -b, --baccarat        Play a game of baccarat\n"
-            " -n, --no-shuffle      Deal from an un-shuffled deck\n"
-            " -h, --help            Display this help message\n");
-    exit(error ? EXIT_FAILURE : EXIT_SUCCESS);
+void print_usage(FILE *destination) {
+    puts("Usage: bicycle [OPTION]...");
+    cag_option_print(options, CAG_ARRAY_SIZE(options), destination);
 }
 
-struct timeval get_time(void) {
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-    return tv;
-}
-
-bool strtoint(int *dest, const char *str) {
+long int argtoi(const cag_option_context *context) {
     char *endptr;
-    const int value = strtol(str, &endptr, 10);
-    if (endptr == str || *endptr != '\0') {
-        return false;
+    const char *option_value = cag_option_get_value(context);
+    const long int value = strtol(option_value, &endptr, 10);
+
+    if (endptr == option_value || *endptr != '\0' || value <= 0) {
+        print_usage(stderr);
+        printf("Argument for option '%c' must be a number greater than 0.\n", cag_option_get_identifier(context));
+        exit(EXIT_FAILURE);
     }
 
-    *dest = value;
-    return true;
+    return value;
 }
 
-void process_arguments(const int argc, char *argv[]) {
-    static struct option long_options[] = {
-        {"row-size", required_argument, nullptr, 'r'},
-        {"cards", required_argument, nullptr, 'c'},
-        {"decks", required_argument, nullptr, 'd'},
-        {"seed", required_argument, nullptr, 's'},
-        {"no-shuffle", no_argument, nullptr, 'n'},
-        {"baccarat", no_argument, nullptr, 'b'},
-        {"help", no_argument, nullptr, 'h'}
-    };
-
-    int ch;
-    while ((ch = getopt_long(argc, argv, "r:c:d:s:nbh", long_options, nullptr)) != -1) {
-        switch (ch) {
+void process_arguments(int argc, char *argv[]) {
+    cag_option_context context;
+    cag_option_init(&context, options, CAG_ARRAY_SIZE(options), argc, argv);
+    while (cag_option_fetch(&context)) {
+        switch (cag_option_get_identifier(&context)) {
             case 'r':
-                if (!strtoint(&row_size, optarg) || hand_size < 1) {
-                    fprintf(stderr, "Row size must be at least 1.\n");
-                    usage(true);
-                }
+                row_size = argtoi(&context);
                 break;
             case 'c':
-                if (!strtoint(&hand_size, optarg) || hand_size < 1) {
-                    fprintf(stderr, "Hand size must be at least 1.\n");
-                    usage(true);
-                }
+                hand_size = argtoi(&context);
                 break;
             case 'd':
-                if (!strtoint(&deck_size, optarg) || deck_size * CARDS_PER_DECK < CARDS_PER_DECK) {
-                    fprintf(stderr, "You must have at least 1 deck in the shoe.\n");
-                    usage(true);
-                }
-                deck_size *= CARDS_PER_DECK;
+                deck_size = argtoi(&context);
                 break;
             case 's':
-                const unsigned int base_seed = seed;
-                if (!strtoint(&seed, optarg) || seed == base_seed) {
-                    fprintf(stderr, "Invalid seed.\n");
-                    usage(true);
-                }
-                break;
-            case 'n':
-                shuffle = false;
+                seed = argtoi(&context);
                 break;
             case 'b':
                 baccarat = true;
                 break;
+            case 'n':
+                shuffle = false;
+                break;
             case 'h':
-                usage(false);
-                break;
-            default:
-                usage(true);
-                break;
+                print_usage(stdout);
+                exit(EXIT_SUCCESS);
+            case '?':
+                print_usage(stderr);
+                cag_option_print_error(&context, stderr);
+                exit(EXIT_FAILURE);
         }
     }
+
+    if (seed == -1)
+        seed = get_time_in_usec();
 }
 
-int main(const int argc, char *argv[]) {
-    seed = get_time().tv_usec;
+int main(int argc, char *argv[]) {
     process_arguments(argc, argv);
-    srand(seed);
 
     Card *deck = malloc(deck_size * sizeof(Card));
-
     generate_deck(deck, deck_size);
-    if (shuffle)
+    if (shuffle) {
+        srand(seed);
         shuffle_deck(deck, deck_size);
+    }
 
     if (baccarat)
-        play_baccarat(deck, deck_size);
+        play_baccarat(deck, row_size);
     else
-        deal_cards(deck, deck_size, hand_size, row_size, shuffle, 0);
+        deal_cards(deck, deck_size, hand_size, row_size, shuffle);
 
     free(deck);
     return 0;

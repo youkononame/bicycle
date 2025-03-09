@@ -1,5 +1,4 @@
-#ifndef CARD_H
-#define CARD_H
+#pragma once
 
 typedef enum Suit : int {
     CLUBS = 1,
@@ -32,6 +31,4 @@ typedef struct Card {
     char face;
 } Card;
 
-void deal_cards(Card *deck, int deck_size, int hand_size, int row_size, bool shuffle, int starting_index);
-
-#endif
+void deal_cards(Card *deck, int deck_size, int hand_size, int row_size, bool shuffle);
