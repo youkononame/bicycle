@@ -12,3 +12,8 @@ _deps
 CMakeUserPresets.json
 cmake-build-debug/
 .idea/
+src/cargs/CargsConfig.cmake
+src/cargs/CargsConfigVersion.cmake
+src/cargs/DartConfiguration.tcl
+src/cargs/cargs.pc
+src/cargs/libcargs.a
