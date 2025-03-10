@@ -1,9 +1,11 @@
 # bicycle 🚲
 ![Static Badge](https://img.shields.io/badge/cmake-%3E%3D3.28.3-blue)
-![Static Badge](https://img.shields.io/badge/make-%3E%3D4.3-blue)
 ![Static Badge](https://img.shields.io/badge/License-GNU_AGPL--3.0-yellow)
+![Static Badge](https://img.shields.io/badge/this%20aint-texas-red)
 
 > A command line utility for playing with cards
+>
+> Submission for Hack Club's [TerminalCraft](https://terminalcraft.hackclub.com)
 
 # Usage
 ```bash
@@ -30,17 +32,17 @@ Instructions to build from source are currently only available for Unix systems.
 
 ### Prerequisites
 - cmake >= 3.28.3
-- make >= 4.3
-
-Although other versions may work, compatability cannot be guaranteed.
+- A build tool of your choosing
 
 ### Instructions
 ```bash
 git clone https://github.com/youkononame/bicycle
 cd bicycle/
-cmake ./
-make
+cmake -S . -B build
+cmake --build build
+./build/bicycle
 ```
+By default, the --build option will use `make` to compile.
 
 # License
 This project is licensed under GNU AGPL-3.0
